@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 15, 2025 at 01:01 PM
+-- Generation Time: Dec 19, 2025 at 09:19 AM
 -- Server version: 10.4.32-MariaDB
--- PHP Version: 8.2.12
+-- PHP Version: 8.0.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -92,7 +92,8 @@ CREATE TABLE `cart` (
 --
 
 INSERT INTO `cart` (`cart_id`, `user_id`) VALUES
-(1, 15);
+(1, 15),
+(4, 20);
 
 -- --------------------------------------------------------
 
@@ -106,6 +107,13 @@ CREATE TABLE `cart_items` (
   `product_id` int(11) NOT NULL,
   `quantity` int(10) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `cart_items`
+--
+
+INSERT INTO `cart_items` (`cart_item_id`, `cart_id`, `product_id`, `quantity`) VALUES
+(39, 4, 3, 1);
 
 -- --------------------------------------------------------
 
@@ -147,7 +155,7 @@ CREATE TABLE `orders` (
   `shipping_address` text NOT NULL,
   `payment_method` varchar(50) DEFAULT 'cod',
   `payment_status` enum('pending','paid','failed') DEFAULT 'pending',
-  `shipping_status` enum('pending','processing','shipped','delivered') DEFAULT 'pending',
+  `shipping_status` enum('pending','paid','processing','shipped','delivered') DEFAULT 'pending',
   `customer_name` varchar(100) NOT NULL,
   `customer_email` varchar(100) NOT NULL,
   `customer_phone` varchar(20) NOT NULL,
@@ -155,6 +163,19 @@ CREATE TABLE `orders` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `orders`
+--
+
+INSERT INTO `orders` (`order_id`, `order_number`, `user_id`, `order_date`, `total_amount`, `subtotal`, `shipping_fee`, `tax`, `status`, `shipping_address`, `payment_method`, `payment_status`, `shipping_status`, `customer_name`, `customer_email`, `customer_phone`, `notes`, `created_at`, `updated_at`) VALUES
+(0, 'ORD202512191594', 20, '2025-12-19 08:18:35', 16788.80, 14990.00, 0.00, 1798.80, 'pending', 'taga legazpi', 'cod', 'pending', 'pending', 'tope tope', 'tope@gmail.com', '09135523611', '', '2025-12-19 08:18:35', '2025-12-19 08:18:35'),
+(1, 'ORD202512195693', 20, '2025-12-19 06:56:19', 8400.00, 7500.00, 0.00, 900.00, 'pending', 'taga legazpi', 'cod', 'pending', 'pending', 'tope tope', 'tope@gmail.com', '09135523611', '', '2025-12-19 06:56:19', '2025-12-19 06:56:19'),
+(2, 'ORD202512199848', 20, '2025-12-19 07:20:05', 1170.00, 1000.00, 50.00, 120.00, 'pending', 'taga legazpi', 'cod', 'pending', 'pending', 'tope tope', 'tope@gmail.com', '09135523611', '', '2025-12-19 07:20:05', '2025-12-19 07:20:05'),
+(3, 'ORD202512197482', 20, '2025-12-19 07:21:01', 1170.00, 1000.00, 50.00, 120.00, 'pending', 'taga legazpi', 'cod', 'pending', 'pending', 'tope tope', 'tope@gmail.com', '09135523611', '', '2025-12-19 07:21:01', '2025-12-19 07:21:01'),
+(4, 'ORD202512198824', 20, '2025-12-19 07:21:14', 1170.00, 1000.00, 50.00, 120.00, 'pending', 'taga legazpi', 'cod', 'pending', 'pending', 'tope tope', 'tope@gmail.com', '09135523611', '', '2025-12-19 07:21:14', '2025-12-19 07:21:14'),
+(5, 'ORD202512191396', 20, '2025-12-19 07:22:37', 610.00, 500.00, 50.00, 60.00, 'pending', 'taga legazpi', 'cod', 'pending', 'pending', 'tope tope', 'tope@gmail.com', '09135523611', '', '2025-12-19 07:22:37', '2025-12-19 07:22:37'),
+(1000, 'ORD202512197607', 20, '2025-12-19 07:24:01', 31348.80, 27990.00, 0.00, 3358.80, 'pending', 'taga legazpi', 'gcash', 'pending', 'pending', 'tope tope', 'tope@gmail.com', '09135523611', '', '2025-12-19 07:24:01', '2025-12-19 08:10:06');
 
 -- --------------------------------------------------------
 
@@ -171,6 +192,19 @@ CREATE TABLE `order_items` (
   `subtotal` decimal(10,2) GENERATED ALWAYS AS (`quantity` * `price`) STORED,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `order_items`
+--
+
+INSERT INTO `order_items` (`order_item_id`, `order_id`, `product_id`, `quantity`, `price`, `created_at`) VALUES
+(19, 1000, 11, 3, 2500.00, '2025-12-19 06:56:19'),
+(20, 2, 10, 1, 1000.00, '2025-12-19 07:20:05'),
+(21, 3, 10, 1, 1000.00, '2025-12-19 07:21:01'),
+(22, 4, 10, 1, 1000.00, '2025-12-19 07:21:14'),
+(23, 5, 9, 1, 500.00, '2025-12-19 07:22:37'),
+(24, 1000, 2, 1, 27990.00, '2025-12-19 07:24:01'),
+(28, 0, 3, 1, 14990.00, '2025-12-19 08:18:35');
 
 -- --------------------------------------------------------
 
@@ -193,11 +227,11 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`product_id`, `product_name`, `price`, `description`, `categories_id`, `image`, `stock_quantity`) VALUES
-(2, 'PlayStation 5 Console', 27990, 'The PS5 console unleashes new gaming possibilities that you never anticipated. ', 1, 'playstation.jpg', 22),
-(3, 'Nintendo Switch V2', 14990, ' Bring games to life with a larger 1080p screen—or connect to a TV and play in up to 4K resolution', 1, 'nintendo.jpg', 14),
-(9, 'Mouse', 500, 'A gaming mouse is a mouse that\'s specifically designed for computer (PC ) gaming. These high performance mice are built to give you added speed and precision, as well as additional mappable buttons that you can use to your advantage in game.', 3, 'mouse.jpg', 124),
-(10, 'Headset', 1000, 'Gaming headsets are an all-in-one solution to immerse yourself in games while chatting with friends and teammates. They\'re over-the-ear headphones equipped with a clear microphone. You can usually distinguish these headsets as they have a bulky build and come with RGB lighting.', 3, 'jbl.jpg', 73),
-(11, 'Controller', 2500, 'A gamepad, also known as a controller, is a handheld input device used to interact with video games. It typically consists of buttons, triggers, thumbsticks, and sometimes a directional pad (D-pad).', 3, 'controller.jpg', 69);
+(2, 'PlayStation 5 Console', 27990, 'The PS5 console unleashes new gaming possibilities that you never anticipated. ', 1, 'playstation.jpg', 21),
+(3, 'Nintendo Switch V2', 14990, ' Bring games to life with a larger 1080p screen—or connect to a TV and play in up to 4K resolution', 1, 'nintendo.jpg', 12),
+(9, 'Mouse', 500, 'A gaming mouse is a mouse that\'s specifically designed for computer (PC ) gaming. These high performance mice are built to give you added speed and precision, as well as additional mappable buttons that you can use to your advantage in game.', 3, 'mouse.jpg', 123),
+(10, 'Headset', 1000, 'Gaming headsets are an all-in-one solution to immerse yourself in games while chatting with friends and teammates. They\'re over-the-ear headphones equipped with a clear microphone. You can usually distinguish these headsets as they have a bulky build and come with RGB lighting.', 3, 'jbl.jpg', 68),
+(11, 'Controller', 2500, 'A gamepad, also known as a controller, is a handheld input device used to interact with video games. It typically consists of buttons, triggers, thumbsticks, and sometimes a directional pad (D-pad).', 3, 'controller.jpg', 66);
 
 -- --------------------------------------------------------
 
@@ -257,7 +291,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`user_id`, `name`, `email`, `password`, `contact_no`, `address`, `date_registered`) VALUES
-(15, 'Nami Nami', 'nami@gmail.com', '$2y$10$nXCLzG2/M1xPXkKiyfsluOcNVwl4Fy9wxBCjxHAQ4F0oO0rcdHFFK', '092737749323', 'Taga Malabg', '2025-12-07 00:29:30');
+(15, 'Nami Nami', 'nami@gmail.com', '$2y$10$nXCLzG2/M1xPXkKiyfsluOcNVwl4Fy9wxBCjxHAQ4F0oO0rcdHFFK', '092737749323', 'Taga Malabg', '2025-12-07 00:29:30'),
+(20, 'tope tope', 'tope@gmail.com', '$2y$10$GhL5O4e6Luk8ezuxXYk/ie06vXcjrTR3ZN8bPOkFbEeT.nxc06wle', '09135523611', 'taga legazpi', '2025-12-19 14:55:05');
 
 --
 -- Indexes for dumped tables
@@ -353,31 +388,25 @@ ALTER TABLE `admin_audit_log`
 -- AUTO_INCREMENT for table `cart`
 --
 ALTER TABLE `cart`
-  MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `cart_items`
 --
 ALTER TABLE `cart_items`
-  MODIFY `cart_item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
-
---
--- AUTO_INCREMENT for table `orders`
---
-ALTER TABLE `orders`
-  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `cart_item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
 
 --
 -- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `order_item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `order_item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- Constraints for dumped tables
