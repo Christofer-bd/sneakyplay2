@@ -22,42 +22,6 @@ $password = '';
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    
-    // ==================== CRITICAL FIX FOR DUPLICATE ENTRY '0' ====================
-    // Force MySQL to skip 0 for auto-increment
-    $pdo->exec("SET @@session.sql_mode='NO_AUTO_VALUE_ON_ZERO'");
-    
-    // Temporarily disable foreign key checks
-    $pdo->exec("SET FOREIGN_KEY_CHECKS = 0");
-    
-    // If there's an order with order_id = 0, delete it (since it's causing issues)
-    try {
-        // Check if order_id = 0 exists
-        $stmt = $pdo->query("SELECT COUNT(*) as count FROM orders WHERE order_id = 0");
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        if ($result['count'] > 0) {
-            // DELETE the problematic row instead of moving it
-            $pdo->exec("DELETE FROM orders WHERE order_id = 0");
-            $pdo->exec("DELETE FROM order_items WHERE order_id = 0");
-            error_log("Fixed: Deleted order_id 0 from database");
-        }
-        
-        // Reset auto_increment to proper value
-        $stmt = $pdo->query("SELECT MAX(order_id) as max_id FROM orders");
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        $next_id = ($row['max_id'] ?: 0) + 1;
-        $pdo->exec("ALTER TABLE orders AUTO_INCREMENT = $next_id");
-        
-    } catch (Exception $e) {
-        // Just log the error, don't stop execution
-        error_log("Auto-fix warning: " . $e->getMessage());
-    }
-    
-    // Re-enable foreign key checks
-    $pdo->exec("SET FOREIGN_KEY_CHECKS = 1");
-    // ==================== END FIX ====================
-    
 } catch (PDOException $e) {
     die("Connection failed: " . $e->getMessage());
 }
@@ -85,13 +49,20 @@ foreach ($product_images as $img) {
     $image_lookup[$img['product_id']] = $img['image'];
 }
 
-// Add image paths to cart items
-foreach ($cart_summary['cart_items'] as &$item) {
+
+// Add image paths to cart items WITHOUT using reference (&)
+$cart_items_with_images = [];
+foreach ($cart_summary['cart_items'] as $item) {
     $image_filename = $image_lookup[$item['product_id']] ?? null;
     $item['image_src'] = !empty($image_filename)
         ? '../assets/image/' . htmlspecialchars($image_filename)
         : 'https://picsum.photos/seed/product' . $item['product_id'] . '/100/100.jpg';
+    $cart_items_with_images[] = $item;
 }
+
+
+// Use this new array for display
+$display_items = $cart_items_with_images;
 
 // Handle checkout form submission
 $error_message = '';
@@ -118,8 +89,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Start transaction
         $pdo->beginTransaction();
 
-        // ==================== SIMPLIFIED INSERT QUERY (DO NOT INCLUDE order_id) ====================
-        // REMOVE order_id from the column list - let MySQL handle it automatically
+        // ==================== FIXED INSERT QUERY ====================
+        // Create order with ALL required columns
         $order_query = "INSERT INTO orders (
             order_number,
             user_id,
@@ -141,19 +112,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $order_stmt = $pdo->prepare($order_query);
         $order_stmt->execute([
-            $order_number,
-            $user_id,
-            $cart_summary['total'],
-            $cart_summary['subtotal'] ?? $cart_summary['total'],
-            $cart_summary['shipping_fee'] ?? 0,
-            $cart_summary['tax'] ?? 0,
-            $_POST['shipping_address'],
-            $_POST['payment_method'],
-            $_POST['full_name'],
-            $_POST['email'],
-            $_POST['phone'],
-            $_POST['order_notes'] ?? ''
+            $order_number,      // 1. order_number
+            $user_id,           // 2. user_id
+            $cart_summary['total'],         // 3. total_amount
+            $cart_summary['subtotal'] ?? $cart_summary['total'], // 4. subtotal
+            $cart_summary['shipping_fee'] ?? 0,  // 5. shipping_fee
+            $cart_summary['tax'] ?? 0,           // 6. tax
+            $_POST['shipping_address'],      // 7. shipping_address
+            $_POST['payment_method'],        // 8. payment_method
+            $_POST['full_name'],             // 9. customer_name
+            $_POST['email'],                 // 10. customer_email
+            $_POST['phone'],                 // 11. customer_phone
+            $_POST['order_notes'] ?? ''      // 12. notes
         ]);
+        // ==================== END FIXED INSERT ====================
 
         $order_id = $pdo->lastInsertId();
 
@@ -439,7 +411,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="order-items">
                             <h4><?php echo $cart_summary['total_items']; ?> Item(s) in Cart</h4>
                             <div class="items-list">
-                                <?php foreach ($cart_summary['cart_items'] as $item): ?>
+                                <?php foreach ($display_items as $item): ?>
                                     <div class="order-item">
                                         <div class="item-image">
                                             <img src="<?php echo $item['image_src']; ?>"
